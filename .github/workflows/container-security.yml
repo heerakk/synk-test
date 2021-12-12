@@ -1,0 +1,21 @@
+name: Docker Security Check
+on: [push, pull_request]
+jobs:
+  container-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        name: Docker build
+        run: docker build . -t test-image
+      - name: Snyk Container Security Check
+        continue-on-error: true
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: test-image
+          args: --file=Dockerfile
+        - name: Github Code Scanning
+          uses: github/codeql-action/upload-sarif@v1
+          with:
+            sarif_file: snyk.sarif
